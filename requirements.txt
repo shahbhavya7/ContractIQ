@@ -1,0 +1,42 @@
+# Core Dependencies - Exact Versions (Tested & Working)
+streamlit==1.45.1
+
+# LangChain Ecosystem
+langchain==0.3.20
+langchain-core==0.3.49
+langchain-groq==0.3.2
+langchain-huggingface==0.1.2
+langchain-postgres==0.0.12
+langchain-text-splitters==0.3.7
+
+# PostgreSQL + Vector Store (with connection pooling)
+psycopg==3.2.10
+psycopg-binary==3.2.10
+psycopg-pool==3.2.6
+pgvector==0.2.5
+sqlalchemy==2.0.23
+
+# Embeddings & ML
+sentence-transformers==4.1.0
+huggingface-hub==0.33.0
+torch==2.7.1
+
+# LLM API
+groq==0.22.0
+
+# PDF Processing (with title-based chunking)
+pdfminer.six==20231228
+unstructured==0.11.8
+
+# FastAPI Backend
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Utilities
+python-dotenv==1.0.0
+
+# Additional Dependencies (Auto-installed with above)
+# numpy>=1.26.0
+# pydantic>=2.7.4
+# sqlalchemy>=2.0.23
