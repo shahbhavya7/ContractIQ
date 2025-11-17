@@ -13,7 +13,7 @@ from datetime import datetime
 import warnings
 
 from langchain_core.documents import Document
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_huggingface import HuggingFaceEmbeddings
 
 from ragas.llms import LangchainLLMWrapper
@@ -24,6 +24,7 @@ from ragas.testset.transforms import default_transforms, apply_transforms
 from ragas.testset.synthesizers import default_query_distribution
 
 
+
 class ContractTestsetGenerator:
     """
     Handles testset generation for Contract RAG system using Ragas
@@ -31,8 +32,7 @@ class ContractTestsetGenerator:
     
     def __init__(
         self,
-        groq_api_key: Optional[str] = None,
-        llm_model: str = "llama-3.3-70b-versatile",
+        llm_model: str = "gemini-2.5-flash",
         embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
         max_retries: int = 2,
         retry_delay: int = 30
@@ -41,30 +41,26 @@ class ContractTestsetGenerator:
         Initialize the testset generator
         
         Args:
-            groq_api_key: Groq API key for LLM (uses env var if not provided)
-            llm_model: Groq model to use for generation
+            llm_model: Google Gemini model to use for generation (default: gemini-2.5-flash)
             embedding_model: HuggingFace embedding model
             max_retries: Maximum number of retries for rate limit errors
             retry_delay: Delay in seconds between retries
         """
-        self.groq_api_key = groq_api_key or os.getenv("GROQ_API_KEY")
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         
-        if not self.groq_api_key:
-            raise ValueError("GROQ_API_KEY not found in environment or parameters")
+        if not gemini_api_key:
+            raise ValueError("GEMINI_API_KEY not found in environment. Get one free at https://makersuite.google.com/app/apikey")
         
-        # Setup LLM for generation with rate limit handling
-        os.environ["GROQ_API_KEY"] = self.groq_api_key
+        print("🤖 Using Google Gemini (Free tier: 1M tokens/day + much higher rate limits)")
         
+        # Setup Google Gemini LLM
         self.generator_llm = LangchainLLMWrapper(
-            ChatGroq(
+            ChatGoogleGenerativeAI(
                 model=llm_model,
-                temperature=0.3,  # Slight randomness for faster, varied generation
-                api_key=self.groq_api_key,
-                max_retries=max_retries,
-                timeout=60,  # Reduced from 120s for faster failure/retry
-                max_tokens=2048  # Reduced from 4096 for faster generation
+                temperature=0.2,
+                google_api_key=gemini_api_key
             )
         )
         
@@ -291,7 +287,8 @@ class ContractTestsetGenerator:
         collection_name: str,
         testset_size: int = 10,
         save_dir: Optional[str] = None,
-        fast_mode: bool = True
+        fast_mode: bool = True,
+        source_file: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Generate testset directly from vector store documents
@@ -301,23 +298,44 @@ class ContractTestsetGenerator:
             collection_name: Name of the collection
             testset_size: Number of test questions
             save_dir: Directory to save outputs
+            fast_mode: Skip expensive transforms for speed
+            source_file: If provided, only use chunks from this PDF file
             
         Returns:
             Dictionary with testset DataFrame and metadata
         """
-        print(f"Retrieving documents from collection '{collection_name}'...")
+        if source_file:
+            print(f"Retrieving documents from '{source_file}' in collection '{collection_name}'...")
+        else:
+            print(f"Retrieving documents from collection '{collection_name}'...")
         
         # Get documents from vector store
         # Aggressively limit for speed - testsets don't need all documents
         max_chunks = 100  # Reduced from 500 for much faster generation
-        all_docs = vector_store.similarity_search("", k=max_chunks)
+        
+        if source_file:
+            # Filter by specific source file
+            all_docs = vector_store.similarity_search(
+                "",
+                k=max_chunks,
+                filter={"source_file": source_file}
+            )
+            
+            if not all_docs:
+                raise ValueError(f"No documents found for file '{source_file}'. Make sure the PDF is ingested first.")
+        else:
+            # Get from all files
+            all_docs = vector_store.similarity_search("", k=max_chunks)
         
         if not all_docs:
             raise ValueError("No documents found in the vector store")
         
-        print(f"✓ Retrieved {len(all_docs)} document chunks (optimized for speed)")
-        if len(all_docs) >= max_chunks:
-            print(f"   (Limited to {max_chunks} chunks for faster generation)")
+        if source_file:
+            print(f"✓ Retrieved {len(all_docs)} chunks from {source_file}")
+        else:
+            print(f"✓ Retrieved {len(all_docs)} document chunks (optimized for speed)")
+            if len(all_docs) >= max_chunks:
+                print(f"   (Limited to {max_chunks} chunks for faster generation)")
         
         # Create timestamp for file naming
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -346,6 +364,7 @@ class ContractTestsetGenerator:
         # Prepare metadata
         metadata = {
             "collection_name": collection_name,
+            "source_file": source_file if source_file else "all_files",
             "total_chunks": len(all_docs),
             "testset_size": len(df),
             "timestamp": timestamp,
@@ -364,7 +383,6 @@ class ContractTestsetGenerator:
 
 def create_testset_from_documents(
     documents: List[Document],
-    groq_api_key: str,
     testset_size: int = 10,
     save_dir: Optional[str] = None
 ) -> Dict[str, Any]:
@@ -373,16 +391,13 @@ def create_testset_from_documents(
     
     Args:
         documents: List of LangChain Document objects
-        groq_api_key: Groq API key
         testset_size: Number of test questions
         save_dir: Directory to save outputs
         
     Returns:
         Dictionary with testset DataFrame and metadata
     """
-    generator = ContractTestsetGenerator(
-        groq_api_key=groq_api_key
-    )
+    generator = ContractTestsetGenerator()
     
     # Create timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

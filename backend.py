@@ -79,6 +79,7 @@ class StatusResponse(BaseModel):
 class TestsetGenerationRequest(BaseModel):
     testset_size: int = 10
     save_to_disk: bool = True
+    source_file: Optional[str] = None  # If provided, generate from this PDF only
 
 class TestsetGenerationResponse(BaseModel):
     status: str
@@ -476,30 +477,31 @@ async def clear_collection():
 @app.post("/generate-testset", response_model=TestsetGenerationResponse)
 async def generate_testset(request: TestsetGenerationRequest):
     """
-    Generate a Ragas testset from all documents in the vector store
-    Uses Groq for LLM and HuggingFace for embeddings (same as main RAG system)
+    Generate a Ragas testset from documents in the vector store.
+    Can generate from all documents or from a single PDF file.
+    Uses Google Gemini for LLM and HuggingFace for embeddings.
     """
     global VECTOR_STORE
     
     if VECTOR_STORE is None:
         raise HTTPException(status_code=400, detail="System not initialized. Check backend logs.")
     
-    if not DB_CONFIG.get("groq_api_key"):
+    if not os.getenv("GEMINI_API_KEY"):
         raise HTTPException(
             status_code=400,
-            detail="GROQ_API_KEY not found. Please add it to your .env file."
+            detail="GEMINI_API_KEY not found. Please add it to your .env file. Get one free at https://makersuite.google.com/app/apikey"
         )
     
     try:
         print(f"\n{'='*60}")
-        print(f"Starting Testset Generation")
+        if request.source_file:
+            print(f"Starting Testset Generation from: {request.source_file}")
+        else:
+            print(f"Starting Testset Generation from ALL documents")
         print(f"{'='*60}")
         
-        # Initialize testset generator (only needs Groq API key)
-        generator = ContractTestsetGenerator(
-            groq_api_key=DB_CONFIG["groq_api_key"],
-            llm_model=DB_CONFIG["llm_model"]
-        )
+        # Initialize testset generator (uses GEMINI_API_KEY from environment)
+        generator = ContractTestsetGenerator()
         
         # Setup save directory
         save_dir = "testsets" if request.save_to_disk else None
@@ -510,7 +512,8 @@ async def generate_testset(request: TestsetGenerationRequest):
             collection_name=DB_CONFIG["collection_name"],
             testset_size=request.testset_size,
             save_dir=save_dir,
-            fast_mode=True  # Enable for 5-10x speedup
+            fast_mode=True,  # Enable for 5-10x speedup
+            source_file=request.source_file  # Filter by file if provided
         )
         
         # Convert DataFrame to list of dicts for JSON response
@@ -559,6 +562,52 @@ async def list_testset_files():
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to list testset files: {str(e)}")
+
+@app.get("/available-pdfs")
+async def get_available_pdfs():
+    """Get list of available PDF files for testset generation"""
+    if not DB_CONFIG or not DB_CONFIG.get("groq_api_key"):
+        raise HTTPException(status_code=400, detail="System not initialized.")
+    
+    try:
+        conn_str = f"postgresql://{DB_CONFIG['db_user']}:{DB_CONFIG['db_password']}@{DB_CONFIG['db_host']}:{DB_CONFIG['db_port']}/{DB_CONFIG['db_name']}"
+        
+        with psycopg.connect(conn_str) as conn:
+            with conn.cursor() as cur:
+                # Get collection UUID
+                cur.execute("""
+                    SELECT uuid FROM langchain_pg_collection 
+                    WHERE name = %s
+                """, (DB_CONFIG['collection_name'],))
+                row = cur.fetchone()
+                
+                if not row:
+                    return {"status": "success", "pdfs": []}
+                
+                col_uuid = row[0]
+                
+                # Get list of unique PDFs with chunk counts
+                cur.execute("""
+                    SELECT 
+                        cmetadata->>'source_file' as pdf_name,
+                        COUNT(*) as chunk_count
+                    FROM langchain_pg_embedding
+                    WHERE collection_id = %s
+                    GROUP BY cmetadata->>'source_file'
+                    ORDER BY pdf_name
+                """, (col_uuid,))
+                
+                pdfs = []
+                for row in cur.fetchall():
+                    pdfs.append({
+                        "filename": row[0],
+                        "chunks": row[1]
+                    })
+                
+                return {"status": "success", "pdfs": pdfs}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get PDF list: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
