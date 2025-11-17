@@ -30,6 +30,8 @@ from unstructured.chunking.title import chunk_by_title
 from unstructured.documents.elements import Text
 import psycopg
 
+from testset_generator import ContractTestsetGenerator
+
 app = FastAPI(title="Contract RAG Backend", version="1.0.0")
 
 app.add_middleware(
@@ -73,6 +75,16 @@ class StatusResponse(BaseModel):
     status: str
     message: str
     details: Optional[Dict[str, Any]] = None
+
+class TestsetGenerationRequest(BaseModel):
+    testset_size: int = 10
+    save_to_disk: bool = True
+
+class TestsetGenerationResponse(BaseModel):
+    status: str
+    message: str
+    testset: Optional[List[Dict[str, Any]]] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 
 def extract_text_from_pdf(pdf_path: str) -> str:
@@ -460,6 +472,93 @@ async def clear_collection():
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to clear collection: {str(e)}")
+
+@app.post("/generate-testset", response_model=TestsetGenerationResponse)
+async def generate_testset(request: TestsetGenerationRequest):
+    """
+    Generate a Ragas testset from all documents in the vector store
+    Uses Groq for LLM and HuggingFace for embeddings (same as main RAG system)
+    """
+    global VECTOR_STORE
+    
+    if VECTOR_STORE is None:
+        raise HTTPException(status_code=400, detail="System not initialized. Check backend logs.")
+    
+    if not DB_CONFIG.get("groq_api_key"):
+        raise HTTPException(
+            status_code=400,
+            detail="GROQ_API_KEY not found. Please add it to your .env file."
+        )
+    
+    try:
+        print(f"\n{'='*60}")
+        print(f"Starting Testset Generation")
+        print(f"{'='*60}")
+        
+        # Initialize testset generator (only needs Groq API key)
+        generator = ContractTestsetGenerator(
+            groq_api_key=DB_CONFIG["groq_api_key"],
+            llm_model=DB_CONFIG["llm_model"]
+        )
+        
+        # Setup save directory
+        save_dir = "testsets" if request.save_to_disk else None
+        
+        # Generate testset from vector store (with fast mode enabled by default)
+        result = generator.generate_from_vector_store(
+            vector_store=VECTOR_STORE,
+            collection_name=DB_CONFIG["collection_name"],
+            testset_size=request.testset_size,
+            save_dir=save_dir,
+            fast_mode=True  # Enable for 5-10x speedup
+        )
+        
+        # Convert DataFrame to list of dicts for JSON response
+        testset_list = result["testset"].to_dict(orient="records")
+        
+        print(f"{'='*60}")
+        print(f"✓ Testset Generation Complete!")
+        print(f"{'='*60}\n")
+        
+        return TestsetGenerationResponse(
+            status="success",
+            message=f"Successfully generated {len(testset_list)} test questions",
+            testset=testset_list,
+            metadata=result["metadata"]
+        )
+    
+    except Exception as e:
+        print(f"Testset generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Testset generation failed: {str(e)}")
+
+@app.get("/testset-files")
+async def list_testset_files():
+    """List all generated testset files"""
+    testsets_dir = "testsets"
+    
+    if not os.path.exists(testsets_dir):
+        return {"status": "success", "files": []}
+    
+    try:
+        files = []
+        for filename in os.listdir(testsets_dir):
+            if filename.endswith(".csv"):
+                filepath = os.path.join(testsets_dir, filename)
+                file_info = {
+                    "filename": filename,
+                    "path": filepath,
+                    "size": os.path.getsize(filepath),
+                    "modified": os.path.getmtime(filepath)
+                }
+                files.append(file_info)
+        
+        # Sort by modified time (newest first)
+        files.sort(key=lambda x: x["modified"], reverse=True)
+        
+        return {"status": "success", "files": files}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list testset files: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

@@ -8,6 +8,10 @@ langchain-groq==0.3.2
 langchain-huggingface==0.1.2
 langchain-postgres==0.0.12
 langchain-text-splitters==0.3.7
+langchain-community==0.3.20
+
+# Ragas - Testset Generation & RAG Evaluation (uses HuggingFace embeddings)
+ragas==0.2.15
 
 # PostgreSQL + Vector Store (with connection pooling)
 psycopg==3.2.10

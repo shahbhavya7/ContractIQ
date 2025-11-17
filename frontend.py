@@ -63,6 +63,31 @@ def clear_collection() -> bool:
     except:
         return False
 
+def generate_testset(testset_size: int = 10, save_to_disk: bool = True) -> Dict[str, Any]:
+    """Generate a testset using Ragas"""
+    try:
+        payload = {
+            "testset_size": testset_size,
+            "save_to_disk": save_to_disk
+        }
+        response = requests.post(f"{BACKEND_URL}/generate-testset", json=payload)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"status": "error", "message": response.json().get('detail', 'Generation failed')}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+def get_testset_files() -> List[Dict[str, Any]]:
+    """Get list of generated testset files"""
+    try:
+        response = requests.get(f"{BACKEND_URL}/testset-files")
+        if response.status_code == 200:
+            return response.json().get("files", [])
+        return []
+    except:
+        return []
+
 with st.sidebar:
     st.title("🛠️ Contract RAG System")
     
@@ -88,7 +113,7 @@ with st.sidebar:
     
     tab_selection = st.radio(
         "Select Operation",
-        ["📤 Ingest PDFs", "🔍 Query Documents"],
+        ["📤 Ingest PDFs", "🔍 Query Documents", "🧪 Generate Testset"],
         label_visibility="collapsed"
     )
     
@@ -206,7 +231,126 @@ else:
              
                 st.session_state.current_stats = get_stats()
     
-    else:
+    elif tab_selection == "🧪 Generate Testset":
+        st.header("🧪 Generate Evaluation Testset")
+        
+        st.markdown("""
+        Generate synthetic question-answer pairs for evaluating your RAG system using **Ragas**.
+        
+        **Requirements:**
+        - Documents must be ingested first
+        - Only requires `GROQ_API_KEY` (same as main system)
+        
+        **What gets generated:**
+        - Single-hop specific queries (50%)
+        - Multi-hop abstract queries (25%)
+        - Multi-hop specific queries (25%)
+        """)
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            testset_size = st.slider(
+                "Number of test questions to generate",
+                min_value=5,
+                max_value=50,
+                value=10,
+                step=5,
+                help="More questions take longer to generate but provide better evaluation coverage"
+            )
+        
+        with col2:
+            save_to_disk = st.checkbox(
+                "Save to disk",
+                value=True,
+                help="Save testset and knowledge graph to 'testsets' folder"
+            )
+        
+        if st.button("🚀 Generate Testset", type="primary"):
+            with st.spinner("🤔 Generating testset... This may take a few minutes..."):
+                result = generate_testset(testset_size, save_to_disk)
+                
+                if result.get("status") == "success":
+                    st.success(f"✅ {result.get('message')}")
+                    
+                    metadata = result.get("metadata", {})
+                    testset_data = result.get("testset", [])
+                    
+                    # Display metadata
+                    st.markdown("### 📊 Generation Statistics")
+                    col1, col2, col3, col4 = st.columns(4)
+                    col1.metric("Questions", metadata.get("testset_size", 0))
+                    col2.metric("Source Chunks", metadata.get("total_chunks", 0))
+                    col3.metric("KG Nodes", metadata.get("kg_nodes", 0))
+                    col4.metric("KG Relations", metadata.get("kg_relationships", 0))
+                    
+                    if save_to_disk:
+                        st.info(f"📁 Files saved in `testsets/` folder")
+                        if metadata.get("testset_path"):
+                            st.code(metadata.get("testset_path"))
+                    
+                    # Display testset preview
+                    st.markdown("### 📋 Generated Testset Preview")
+                    
+                    if testset_data:
+                        import pandas as pd
+                        df = pd.DataFrame(testset_data)
+                        
+                        st.dataframe(
+                            df,
+                            use_container_width=True,
+                            height=400
+                        )
+                        
+                        # Show detailed view
+                        st.markdown("### 🔍 Detailed Question View")
+                        
+                        for idx, row in enumerate(testset_data[:5], 1):  # Show first 5
+                            with st.expander(f"Question {idx}: {row.get('user_input', 'N/A')[:80]}..."):
+                                st.markdown(f"**Question:** {row.get('user_input', 'N/A')}")
+                                
+                                if 'reference' in row:
+                                    st.markdown(f"**Reference Answer:** {row.get('reference', 'N/A')}")
+                                
+                                if 'reference_contexts' in row:
+                                    st.markdown("**Reference Contexts:**")
+                                    contexts = row.get('reference_contexts', [])
+                                    if isinstance(contexts, list):
+                                        for i, ctx in enumerate(contexts, 1):
+                                            st.text_area(
+                                                f"Context {i}",
+                                                value=ctx[:500] + "..." if len(str(ctx)) > 500 else str(ctx),
+                                                height=100,
+                                                key=f"ctx_{idx}_{i}"
+                                            )
+                        
+                        if len(testset_data) > 5:
+                            st.info(f"Showing 5 of {len(testset_data)} questions. View full testset in the CSV file.")
+                    
+                else:
+                    st.error(f"❌ Generation failed: {result.get('message', 'Unknown error')}")
+        
+        # Show previously generated testsets
+        st.markdown("---")
+        st.markdown("### 📚 Previously Generated Testsets")
+        
+        testset_files = get_testset_files()
+        
+        if testset_files:
+            st.info(f"Found {len(testset_files)} testset file(s)")
+            
+            for file_info in testset_files[:10]:  # Show last 10
+                from datetime import datetime
+                modified_time = datetime.fromtimestamp(file_info.get("modified", 0))
+                
+                col1, col2, col3 = st.columns([3, 1, 1])
+                col1.text(f"📄 {file_info.get('filename', 'Unknown')}")
+                col2.text(f"{file_info.get('size', 0) / 1024:.1f} KB")
+                col3.text(modified_time.strftime("%Y-%m-%d %H:%M"))
+        else:
+            st.info("No testsets generated yet. Generate your first testset above!")
+    
+    else:  # Query Documents tab
         st.header("🔍 Query Documents")
         
         query = st.text_input(
@@ -295,7 +439,7 @@ else:
                                     label_visibility="collapsed"
                                 )
         
-    
+        # Chat History section for Query tab only
         if st.session_state.chat_history:
             st.markdown("---")
             st.markdown("### 📜 Recent Queries")
