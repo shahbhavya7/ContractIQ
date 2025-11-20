@@ -235,25 +235,6 @@ else:
     elif tab_selection == "🧪 Generate Testset":
         st.header("🧪 Generate Evaluation Testset")
         
-        st.markdown("""
-        Generate synthetic question-answer pairs for evaluating your RAG system using **Ragas**.
-        
-        **⚡ Single PDF Mode (Recommended):**
-        - ✅ Much faster generation (2-3 minutes)
-        - ✅ Lower token usage
-        - ✅ Focused on one document
-        - Perfect for testing individual contracts
-        
-        **🌐 All Documents Mode:**
-        - Takes longer with many documents
-        - Higher API usage
-        - Questions span all ingested PDFs
-        
-        **Requirements:**
-        - Documents must be ingested first
-        - Only requires `GROQ_API_KEY` (same as main system)
-        """)
-        
         # Get list of available PDFs - refresh on each load
         stats = get_stats()
         available_pdfs = []

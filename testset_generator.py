@@ -51,9 +51,7 @@ class ContractTestsetGenerator:
         self.retry_delay = retry_delay
         
         if not gemini_api_key:
-            raise ValueError("GEMINI_API_KEY not found in environment. Get one free at https://makersuite.google.com/app/apikey")
-        
-        print("🤖 Using Google Gemini (Free tier: 1M tokens/day + much higher rate limits)")
+            raise ValueError("GEMINI_API_KEY not found in environment.")
         
         # Setup Google Gemini LLM
         self.generator_llm = LangchainLLMWrapper(
@@ -113,7 +111,6 @@ class ContractTestsetGenerator:
         
         # Handle fast mode with minimal but sufficient enrichment
         if skip_transforms:
-            print("⚡ Fast mode: Applying minimal enrichment (3-5 documents only)")
             # Process just a few documents to create the necessary node structure
             # This is 10x faster than full enrichment but still generates quality questions
             minimal_docs = documents[:min(5, len(documents))]  # Use just 5 documents
@@ -350,7 +347,7 @@ class ContractTestsetGenerator:
             testset_path = None
         
         # Create knowledge graph
-        print(f"⚡ Fast mode: {'ENABLED' if fast_mode else 'DISABLED'}")
+        print(f"Fast mode: {'ENABLED' if fast_mode else 'DISABLED'}")
         if fast_mode:
             print("   Skipping expensive transformations for 5-10x speed boost")
         kg = self.create_knowledge_graph_from_documents(all_docs, save_path=kg_path, skip_transforms=fast_mode)

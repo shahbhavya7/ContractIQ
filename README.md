@@ -27,23 +27,9 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system specifically 
 - **Similarity Scoring**: Visual ranking of source relevance with color-coded indicators
 - **Chat History**: Keep track of recent queries and responses
 
-## 🏗️ Architecture
 
-```
-┌─────────────────┐         ┌──────────────────┐         ┌─────────────────┐
-│   Streamlit     │◄───────►│   FastAPI        │◄───────►│   PostgreSQL    │
-│   Frontend      │  HTTP   │   Backend        │  SQL    │   + pgvector    │
-└─────────────────┘         └──────────────────┘         └─────────────────┘
-                                     │
-                                     ▼
-                            ┌──────────────────┐
-                            │   Groq LLaMA     │
-                            │   + HuggingFace  │
-                            │   Embeddings     │
-                            └──────────────────┘
-```
 
-### Components
+## Components
 
 **Backend (FastAPI)**
 
@@ -70,7 +56,7 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system specifically 
 
 **AI Models**
 
-- **LLM**: Groq's llama-3.3-70b-versatile (configurable)
+- **LLM**: Groq's llama-3.3-70b-versatile (configurable) and Gemini models for testset generation
 - **Embeddings**: sentence-transformers/all-MiniLM-L6-v2
 - **Framework**: LangChain for RAG orchestration
 
@@ -81,17 +67,10 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system specifically 
 - Python 3.8+
 - PostgreSQL 12+ with pgvector extension
 - Groq API key (get one at [console.groq.com](https://console.groq.com))
+- Gemini API key (get one at [makersuite.google.com](https://makersuite.google.com/app/apikey))
 
-### Installation
 
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/shahbhavya7/Industry-RAG.git
-   cd ContractRAG
-   ```
-
-2. **Install dependencies**
+1. **Install dependencies**
 
    ```bash
    pip install -r requirements.txt
@@ -188,7 +167,7 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system specifically 
 - Exports to CSV for evaluation workflows
 - Tracks generation statistics
 
-See [TESTSET_GENERATION_GUIDE.md](TESTSET_GENERATION_GUIDE.md) for detailed instructions.
+
 
 ## 🔧 Configuration
 
@@ -346,22 +325,8 @@ Clear all documents from collection
 }
 ```
 
-## 🗂️ Project Structure
 
-```
-ContractRAG/
-├── backend.py                      # FastAPI backend server
-├── frontend.py                     # Streamlit web interface
-├── testset_generator.py            # Ragas testset generation module
-├── requirements.txt                # Python dependencies
-├── .env                           # Environment configuration (create this)
-├── .env.template                  # Environment template
-├── README.md                      # This file
-├── TESTSET_GENERATION_GUIDE.md    # Detailed testset guide
-└── testsets/                      # Generated testsets (auto-created)
-    ├── testset_20231117_143022.csv
-    └── knowledge_graph_20231117_143022.json
-```
+
 
 ## 🧪 Testing
 
@@ -471,53 +436,4 @@ logging.basicConfig(level=logging.DEBUG)
 - Use HTTPS in production
 - Regular security updates for dependencies
 
-## 🛣️ Roadmap
 
-- [ ] Support for more document formats (DOCX, TXT)
-- [ ] User authentication and multi-tenancy
-- [ ] Document comparison features
-- [ ] Advanced filtering and search operators
-- [ ] Export conversations to PDF/Word
-- [ ] Integration with more LLM providers
-- [ ] Batch query processing
-- [ ] Custom chunking strategies
-- [ ] Multilingual support
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Groq** for ultra-fast LLM inference
-- **LangChain** for RAG framework
-- **Ragas** for evaluation framework
-- **pgvector** for efficient vector search
-- **HuggingFace** for embedding models
-- **FastAPI** and **Streamlit** for excellent frameworks
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/shahbhavya7/Industry-RAG/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/shahbhavya7/Industry-RAG/discussions)
-- **Email**: shahbhavya7@example.com
-
-## 🌟 Star History
-
-If you find this project useful, please consider giving it a star ⭐!
-
----
-
-**Built with ❤️ for contract analysis and RAG applications**
-
-🚀 Powered by FastAPI + Streamlit | 🦙 Groq LLaMA | 🤗 HuggingFace | 🐘 PostgreSQL + pgvector
