@@ -1,97 +1,98 @@
-# 📄 Contract RAG System
+# 📋 ContractIQ
 
-A production-ready **Retrieval-Augmented Generation (RAG)** system specifically designed for analyzing contract documents. Built with FastAPI, Streamlit, PostgreSQL with pgvector, and powered by Groq's LLaMA models.
-
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green.svg)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.45.1-red.svg)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+<div align="center">
+  
+  [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+  [![Streamlit](https://img.shields.io/badge/Frontend-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit)](https://streamlit.io)
+  [![LangChain](https://img.shields.io/badge/Framework-LangChain-1C3C3C?style=for-the-badge&logo=chainlink)](https://langchain.com)
+  [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-316192?style=for-the-badge&logo=postgresql)](https://postgresql.org)
+  [![Groq](https://img.shields.io/badge/LLM-Groq%20LLaMA-FF6B6B?style=for-the-badge&logo=ai)](https://groq.com)
+  [![HuggingFace](https://img.shields.io/badge/Embeddings-HuggingFace-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co)
+  
+  **Intelligent contract analysis powered by Retrieval-Augmented Generation (RAG)**
+  
+  *Upload contracts, ask questions in natural language, and get accurate answers with source citations!*
+  
+</div>
 
 ## 🌟 Features
 
-### Core Capabilities
+<div align="center">
+  
+  | 📤 **PDF Ingestion** | 🔍 **Semantic Search** | 🧪 **Testset Generation** |
+  |:--------------------:|:----------------------:|:-------------------------:|
+  | Automatic text extraction | Context-aware retrieval | Ragas-powered evaluation |
+  | Intelligent chunking | Similarity scoring | Knowledge graph creation |
+  
+  | 💾 **Vector Storage** | 🤖 **AI-Powered QA** | 📊 **Real-time Analytics** |
+  |:---------------------:|:-------------------:|:-------------------------:|
+  | PostgreSQL + pgvector | Groq LLaMA 3.3 70B | Source attribution |
+  | Persistent embeddings | Multi-document reasoning | Performance tracking |
+  
+</div>
 
-- **📤 PDF Ingestion**: Upload and process contract PDFs with automatic text extraction
-- **🔍 Semantic Search**: Natural language querying with context-aware responses
-- **🧪 Testset Generation**: Automated creation of evaluation datasets using Ragas
-- **📊 Source Attribution**: Track which document chunks contributed to each answer
-- **⚡ Fast Processing**: Optimized chunking and embedding pipeline
-- **🐘 PostgreSQL + pgvector**: Persistent vector storage with efficient similarity search
+## ✨ What makes Contract RAG special?
 
-### Technical Highlights
-
-- **Intelligent Chunking**: Title-based chunking preserves document structure
-- **Rate Limit Handling**: Automatic retry logic for API rate limits
-- **Real-time Statistics**: Track ingested documents and collection metrics
-- **Multi-Document Support**: Query across multiple contract documents simultaneously
-- **Similarity Scoring**: Visual ranking of source relevance with color-coded indicators
-- **Chat History**: Keep track of recent queries and responses
-
-
-
-## Components
-
-**Backend (FastAPI)**
-
-- RESTful API endpoints for document operations
-- PDF text extraction with pdfminer.six
-- Vector embedding generation and storage
-- RAG chain orchestration with LangChain
-- Ragas testset generation integration
-
-**Frontend (Streamlit)**
-
-- Interactive web interface
-- PDF upload and management
-- Query interface with example questions
-- Testset generation dashboard
-- Real-time statistics and metrics
-
-**Database (PostgreSQL + pgvector)**
-
-- Vector similarity search
-- Document metadata storage
-- Collection management
-- Persistent data storage
-
-**AI Models**
-
-- **LLM**: Groq's llama-3.3-70b-versatile (configurable) and Gemini models for testset generation
-- **Embeddings**: sentence-transformers/all-MiniLM-L6-v2
-- **Framework**: LangChain for RAG orchestration
+- **📄 Smart PDF Processing** - Extracts and chunks contract documents while preserving structure
+- **🔍 Semantic Understanding** - Uses advanced embeddings to understand context and meaning
+- **💾 Scalable Storage** - PostgreSQL with pgvector extension for efficient vector operations
+- **🤖 Powerful AI** - Groq's lightning-fast LLaMA 3.3 70B model for intelligent responses
+- **📚 Source Citations** - Every answer includes relevant document excerpts with similarity scores
+- **🧪 Quality Assurance** - Built-in testset generation using Ragas for evaluation
+- **⚡ Production Ready** - FastAPI backend with async operations and error handling
+- **🎨 User-Friendly** - Streamlit interface for intuitive document management and querying
+- **🔄 Multi-Document Support** - Query across all uploaded contracts simultaneously
+- **📊 Analytics Dashboard** - Track ingested documents, chunks, and query performance
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.8+
-- PostgreSQL 12+ with pgvector extension
-- Groq API key (get one at [console.groq.com](https://console.groq.com))
-- Gemini API key (get one at [makersuite.google.com](https://makersuite.google.com/app/apikey))
+```bash
+# Python 3.8 or higher
+python --version
 
+# PostgreSQL with pgvector extension
+psql --version
 
-1. **Install dependencies**
+# pip package manager
+pip --version
+```
 
+### Installation
+
+1. **Clone the repository**
    ```bash
-   pip install -r requirements.txt
+   git clone https://github.com/yourusername/contract-rag-system.git
+   cd contract-rag-system
    ```
 
-3. **Set up PostgreSQL with pgvector**
+2. **Install dependencies**
+   ```bash
+   pip install fastapi uvicorn
+   pip install streamlit
+   pip install langchain langchain-postgres langchain-groq langchain-huggingface langchain-google-genai
+   pip install psycopg sentence-transformers
+   pip install pdfminer.six unstructured
+   pip install ragas pandas python-dotenv
+   ```
 
-   ```sql
-   CREATE DATABASE vect;
-   CREATE USER vect WITH PASSWORD 'vect';
-   GRANT ALL PRIVILEGES ON DATABASE vect TO vect;
-
-   -- Connect to vect database
-   \c vect
-   CREATE EXTENSION vector;
+3. **Setup PostgreSQL with pgvector**
+   ```bash
+   # Install pgvector extension
+   # For Ubuntu/Debian:
+   sudo apt-get install postgresql-15-pgvector
+   
+   # Create database
+   createdb vect
+   
+   # Enable pgvector extension
+   psql -d vect -c "CREATE EXTENSION vector;"
    ```
 
 4. **Configure environment variables**
-
+   
    Create a `.env` file in the project root:
-
    ```bash
    # Database Configuration
    DB_HOST=localhost
@@ -100,340 +101,426 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system specifically 
    DB_PASSWORD=vect
    DB_NAME=vect
    COLLECTION_NAME=contract_rag_collection
-
-   # Groq API (Required)
+   
+   # LLM Configuration
    GROQ_API_KEY=your_groq_api_key_here
-
-   # LLM Configuration (Optional)
    LLM_MODEL=llama-3.3-70b-versatile
    TEMPERATURE=0.0
    NUM_RESULTS=5
+   
+   # Optional: For testset generation
+   GEMINI_API_KEY=your_gemini_api_key_here
    ```
 
-5. **Start the backend**
-
+5. **Start the backend server**
    ```bash
    python backend.py
    ```
+   
+   The backend will initialize and display:
+   ```
+   ============================================================
+   Starting Contract RAG Backend
+   ============================================================
+   ✓ System ready in 2.34s!
+   Collection: contract_rag_collection
+   LLM: llama-3.3-70b-versatile
+   Database: localhost:5432/vect
+   ============================================================
+   ```
 
-   The backend will start on `http://localhost:8000`
-
-6. **Start the frontend** (in a new terminal)
-
+6. **Launch the frontend** (in a new terminal)
    ```bash
    streamlit run frontend.py
    ```
 
-   The frontend will open in your browser at `http://localhost:8501`
+7. **Start querying!**
+   - Upload PDF contracts via the web interface
+   - Ask questions in natural language
+   - Get AI-powered answers with source citations
 
-## 📖 Usage Guide
+## 🛠️ Tech Stack
 
-### 1. Ingesting Documents
+<div align="center">
+  
+  ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+  ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+  ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
+  ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+  ![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=chainlink&logoColor=white)
+  
+</div>
 
-1. Navigate to the **"📤 Ingest PDFs"** tab
-2. Click "Browse files" and select one or more PDF contracts
-3. Click "📥 Ingest All Files"
-4. Wait for processing to complete
-5. View ingestion statistics in the sidebar
+### Core Technologies
 
-### 2. Querying Documents
+- **Backend Framework**: FastAPI (High-performance async API with automatic OpenAPI docs)
+- **Frontend**: Streamlit (Interactive web interface with real-time updates)
+- **Vector Database**: PostgreSQL + pgvector (Scalable vector similarity search)
+- **LLM Provider**: Groq (Ultra-fast LLaMA 3.3 70B inference)
+- **Embeddings**: HuggingFace sentence-transformers (all-MiniLM-L6-v2)
+- **RAG Framework**: LangChain (Document processing and retrieval chains)
+- **PDF Processing**: pdfminer.six (Fast text extraction)
+- **Chunking**: Unstructured (Intelligent document segmentation)
+- **Evaluation**: Ragas (Automated testset generation and quality metrics)
 
-1. Navigate to the **"🔍 Query Documents"** tab
-2. Enter your question in natural language
-   - Example: "What are the termination clauses in these contracts?"
-3. Adjust retrieval settings if needed (number of chunks)
-4. Click "🔍 Search"
-5. Review the AI-generated answer and source documents
+## 💡 How It Works
 
-**Query Tips:**
+### System Architecture
 
-- Be specific in your questions
-- Ask about clauses, terms, obligations, or parties
-- Use the example questions as templates
-- More retrieved chunks = more context but slower response
+```mermaid
+graph TB
+    A[📄 PDF Upload] --> B[🔧 Text Extraction]
+    B --> C[✂️ Intelligent Chunking]
+    C --> D[🧮 Embedding Generation]
+    D --> E[💾 Vector Storage]
+    
+    F[❓ User Query] --> G[🧮 Query Embedding]
+    G --> H[🔍 Similarity Search]
+    H --> I[📚 Context Retrieval]
+    I --> J[🤖 LLM Generation]
+    J --> K[💬 Answer + Sources]
+    
+    E --> H
+    
+    L[🧪 Testset Generator] --> M[📊 Knowledge Graph]
+    M --> N[🎯 Synthetic Q&A]
+    
+    style A fill:#4ECDC4,stroke:#333,stroke-width:2px,color:#fff
+    style F fill:#4ECDC4,stroke:#333,stroke-width:2px,color:#fff
+    style J fill:#FF6B6B,stroke:#333,stroke-width:2px,color:#fff
+    style E fill:#96CEB4,stroke:#333,stroke-width:2px,color:#fff
+    style K fill:#FFEAA7,stroke:#333,stroke-width:2px,color:#333
+```
 
-### 3. Generating Evaluation Testsets
+### RAG Pipeline
 
-1. Navigate to the **"🧪 Generate Testset"** tab
-2. Choose the number of questions (5-50)
-3. Enable "Save to disk" to keep files
-4. Click "🚀 Generate Testset"
-5. Review generated questions and download CSV
+1. **📄 Document Ingestion**
+   - User uploads PDF contract via Streamlit interface
+   - pdfminer extracts text content from PDF
+   - Unstructured library chunks text by title (800 char chunks)
+   - Metadata preserved for each chunk (source file, chunk ID)
 
-**Testset Features:**
+2. **🧮 Embedding & Storage**
+   - HuggingFace model generates 384-dim embeddings
+   - Vectors stored in PostgreSQL with pgvector extension
+   - Indexed for fast similarity search
 
-- Automatically generates diverse question types
-- Creates reference answers from your documents
-- Exports to CSV for evaluation workflows
-- Tracks generation statistics
+3. **🔍 Query Processing**
+   - User query converted to embedding vector
+   - Similarity search retrieves top-k relevant chunks
+   - Chunks ranked by cosine similarity score
 
+4. **🤖 Answer Generation**
+   - Retrieved chunks provide context to LLM
+   - Groq LLaMA 3.3 70B generates comprehensive answer
+   - Response includes source citations and metadata
 
+5. **🧪 Quality Evaluation**
+   - Ragas generates synthetic test questions
+   - Knowledge graph captures document relationships
+   - Automated evaluation metrics for RAG performance
 
-## 🔧 Configuration
+## 🎮 Key Components Breakdown
 
-### Environment Variables
+### 📡 FastAPI Backend (backend.py)
 
-| Variable          | Default                   | Description                |
-| ----------------- | ------------------------- | -------------------------- |
-| `DB_HOST`         | `localhost`               | PostgreSQL host            |
-| `DB_PORT`         | `5432`                    | PostgreSQL port            |
-| `DB_USER`         | `vect`                    | Database user              |
-| `DB_PASSWORD`     | `vect`                    | Database password          |
-| `DB_NAME`         | `vect`                    | Database name              |
-| `COLLECTION_NAME` | `contract_rag_collection` | Vector collection name     |
-| `GROQ_API_KEY`    | _(required)_              | Groq API key               |
-| `LLM_MODEL`       | `llama-3.3-70b-versatile` | Groq model name            |
-| `TEMPERATURE`     | `0.0`                     | LLM temperature (0.0-1.0)  |
-| `NUM_RESULTS`     | `5`                       | Default chunks to retrieve |
+**Endpoints:**
+- `POST /ingest` - Upload and process PDF files
+- `POST /query` - Query documents with natural language
+- `GET /stats` - Database statistics and document counts
+- `DELETE /clear` - Clear collection for fresh start
+- `POST /generate-testset` - Generate evaluation testsets
+- `GET /available-pdfs` - List ingested PDF files
+- `GET /testset-files` - List generated testsets
 
-### Available Groq Models
+**Features:**
+- Auto-initialization from environment variables
+- Optimized chunking strategy (800 chars, title-based)
+- Concurrent request handling with async operations
+- Comprehensive error handling and logging
+- CORS middleware for cross-origin requests
 
-- `llama-3.3-70b-versatile` (default, best quality)
-- `llama-3.1-70b-versatile`
-- `mixtral-8x7b-32768`
-- `gemma2-9b-it`
+### 🎨 Streamlit Frontend (frontend.py)
 
-See [Groq documentation](https://console.groq.com/docs/models) for full list.
+**Tabs:**
+- **📤 Ingest PDFs** - Multi-file upload with progress tracking
+- **🔍 Query Documents** - Natural language Q&A interface
+- **🧪 Generate Testset** - Ragas testset generation
+
+**Features:**
+- Real-time status indicators and metrics
+- Chat history with recent queries
+- Source document viewer with similarity scores
+- Collection management (clear, stats)
+- Responsive design with expandable sections
+
+### 🧪 Testset Generator (testset_generator.py)
+
+**Capabilities:**
+- Knowledge graph creation from documents
+- Multiple query types (single-hop, multi-hop)
+- Synthetic question-answer pair generation
+- Fast mode for rapid generation (5-10x speedup)
+- Single-file or multi-document testsets
+- CSV export with metadata
+
+**Features:**
+- Google Gemini integration for generation
+- Rate limit handling with automatic retries
+- Configurable testset size and distribution
+- Knowledge graph persistence
+
+### 🗄️ Vector Store
+
+**Configuration:**
+- **Embedding Model**: all-MiniLM-L6-v2 (384 dimensions)
+- **Similarity Metric**: Cosine similarity
+- **Chunking Strategy**: Title-based, 800 chars max
+- **Retrieval**: Top-k with configurable k (default: 5)
+
+## 📈 System Configuration
+
+### Hyperparameters
+
+```python
+# Database Settings
+DB_HOST = "localhost"
+DB_PORT = 5432
+DB_NAME = "vect"
+COLLECTION_NAME = "contract_rag_collection"
+
+# LLM Configuration
+LLM_MODEL = "llama-3.3-70b-versatile"  # Groq LLaMA 3.3 70B
+TEMPERATURE = 0.0                      # Deterministic responses
+NUM_RESULTS = 5                        # Retrieved chunks per query
+
+# Chunking Parameters
+MAX_CHUNK_SIZE = 800                   # Characters per chunk
+CHUNK_OVERLAP = 160                    # 20% overlap (0.8 * 800)
+MIN_CHUNK_SIZE = 100                   # Combine small sections
+
+# Embedding Model
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_DIM = 384                    # Vector dimensions
+NORMALIZE = True                       # L2 normalization
+
+# Testset Generation
+TESTSET_SIZE = 10                      # Questions to generate
+FAST_MODE = True                       # Skip expensive transforms
+MAX_CHUNKS_FOR_TESTSET = 100          # Sample limit
+```
+
+### Performance Optimization
+
+- **Fast Ingestion**: pdfminer for speed (vs. PyPDF2)
+- **Efficient Chunking**: Title-based preservation of structure
+- **Batch Processing**: Multiple PDFs uploaded simultaneously
+- **Connection Pooling**: PostgreSQL connection reuse
+- **Caching**: Embeddings model loaded once at startup
+- **Async Operations**: Non-blocking API requests
+
+## 🎯 Use Cases
+
+### Contract Analysis
+- Identify termination clauses across multiple contracts
+- Compare payment terms and obligations
+- Extract key dates and milestones
+- Analyze liability and indemnification provisions
+
+### Legal Research
+- Find specific legal language and precedents
+- Compare contract structures and provisions
+- Identify inconsistencies across documents
+- Generate summaries of key terms
+
+### Compliance Review
+- Verify regulatory compliance requirements
+- Check for required clauses and language
+- Audit contract modifications and amendments
+- Track obligations and responsibilities
+
+### Due Diligence
+- Rapid contract portfolio analysis
+- Risk identification and assessment
+- Key term extraction and comparison
+- Automated Q&A for investor queries
 
 ## 📊 API Documentation
 
-### Endpoints
+### POST /ingest
 
-#### `GET /`
+Upload and process a PDF contract document.
 
-Health check and system status
-
-**Response:**
-
-```json
-{
-  "status": "running",
-  "service": "Contract RAG Backend",
-  "version": "1.0.0",
-  "initialized": true
-}
+**Request:**
+```bash
+curl -X POST "http://localhost:8000/ingest" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@contract.pdf"
 ```
 
-#### `POST /ingest`
-
-Ingest a PDF document
-
-**Request:** `multipart/form-data` with PDF file
-
 **Response:**
-
 ```json
 {
   "status": "success",
-  "message": "PDF ingested successfully in 2.34s",
+  "message": "PDF ingested successfully in 2.45s",
   "details": {
     "filename": "contract.pdf",
-    "chunks_created": 25,
-    "text_length": 12500,
-    "processing_time": "2.34s"
+    "chunks_created": 28,
+    "text_length": 15420,
+    "processing_time": "2.45s"
   }
 }
 ```
 
-#### `POST /query`
+### POST /query
 
-Query the document collection
+Query ingested documents with natural language.
 
 **Request:**
-
-```json
-{
-  "query": "What are the payment terms?",
-  "num_results": 5
-}
+```bash
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "What are the termination clauses?",
+    "num_results": 5
+  }'
 ```
 
 **Response:**
-
 ```json
 {
-  "answer": "The payment terms specify...",
+  "answer": "The contracts contain several termination provisions...",
   "sources": [
     {
       "rank": 1,
-      "content": "Payment shall be made...",
-      "similarity_score": 0.89,
-      "source_file": "contract.pdf",
-      "chunk_id": 5,
-      "total_chunks": 25
+      "content": "Either party may terminate this agreement...",
+      "metadata": {
+        "source_file": "contract.pdf",
+        "chunk_id": 12,
+        "total_chunks": 28
+      },
+      "similarity_score": 0.87
     }
   ]
 }
 ```
 
-#### `GET /stats`
+### GET /stats
 
-Get collection statistics
+Get database statistics and document counts.
 
 **Response:**
-
 ```json
 {
   "status": "success",
+  "message": "Database statistics retrieved",
   "details": {
-    "total_chunks": 150,
-    "unique_pdfs": 6,
-    "pdf_list": ["contract1.pdf", "contract2.pdf"]
+    "total_chunks": 156,
+    "unique_pdfs": 5,
+    "collection_name": "contract_rag_collection",
+    "pdf_list": [
+      "contract_1.pdf",
+      "contract_2.pdf",
+      "service_agreement.pdf"
+    ]
   }
 }
 ```
 
-#### `POST /generate-testset`
-
-Generate evaluation testset
-
-**Request:**
-
-```json
-{
-  "testset_size": 10,
-  "save_to_disk": true
-}
-```
-
-**Response:**
-
-```json
-{
-  "status": "success",
-  "message": "Successfully generated 10 test questions",
-  "testset": [...],
-  "metadata": {
-    "total_chunks": 150,
-    "testset_size": 10,
-    "kg_nodes": 300,
-    "kg_relationships": 1200
-  }
-}
-```
-
-#### `DELETE /clear`
-
-Clear all documents from collection
-
-**Response:**
-
-```json
-{
-  "status": "success",
-  "message": "Collection cleared successfully"
-}
-```
 
 
+## 🤝 Contributing
 
+Contributions are welcome to enhance the Contract RAG system!
 
-## 🧪 Testing
+1. **🍴 Fork the repository**
 
-### Manual Testing
-
-1. **Ingest Test Document**
-
+2. **🌟 Create your feature branch**
    ```bash
-   curl -X POST "http://localhost:8000/ingest" \
-     -F "file=@test_contract.pdf"
+   git checkout -b feature/ImprovedChunking
    ```
 
-2. **Query Test**
-
+3. **💻 Commit your changes**
    ```bash
-   curl -X POST "http://localhost:8000/query" \
-     -H "Content-Type: application/json" \
-     -d '{"query": "What are the key terms?", "num_results": 3}'
+   git commit -m 'Add improved chunking algorithm'
    ```
 
-3. **Generate Testset**
+4. **🚀 Push to the branch**
    ```bash
-   curl -X POST "http://localhost:8000/generate-testset" \
-     -H "Content-Type: application/json" \
-     -d '{"testset_size": 5, "save_to_disk": true}'
+   git push origin feature/ImprovedChunking
    ```
 
-### Automated Evaluation
+5. **📬 Open a Pull Request**
 
-Use generated testsets with Ragas metrics:
+### Development Guidelines
 
-```python
-from ragas import evaluate
-from ragas.metrics import answer_relevancy, faithfulness
+- Follow PEP 8 style guidelines for Python code
+- Add comprehensive docstrings for all functions
+- Include unit tests for new features
+- Update documentation for API changes
+- Test with various PDF formats and sizes
+- Ensure backward compatibility with existing data
 
-# Load your testset
-import pandas as pd
-testset = pd.read_csv("testsets/testset_20231117_143022.csv")
+## 🧪 Experiments and Extensions
 
-# Evaluate your RAG system
-results = evaluate(
-    dataset=testset,
-    metrics=[answer_relevancy, faithfulness]
-)
-```
+### Possible Enhancements
 
-## ⚠️ Troubleshooting
+- **🔥 Hybrid Search** - Combine vector search with keyword matching (BM25)
+- **🎯 Query Rewriting** - Automatic query expansion and reformulation
+- **📊 Advanced Analytics** - Dashboard with query trends and document insights
+- **🔗 Multi-Modal Support** - Process scanned PDFs with OCR
+- **⚡ Streaming Responses** - Real-time answer generation with WebSocket
+- **🎨 Custom Themes** - Configurable UI themes and branding
+- **📱 Mobile App** - iOS/Android client for on-the-go access
+- **🔐 Authentication** - User accounts and access control
+- **📈 Usage Metrics** - Track queries, response times, and accuracy
+- **🌍 Multi-Language** - Support for contracts in multiple languages
 
-### Common Issues
+## 🎓 Educational Value
 
-**1. Backend fails to start**
+This project demonstrates key concepts in:
 
-- Check PostgreSQL is running: `pg_isready`
-- Verify pgvector extension: `psql -c "SELECT * FROM pg_extension WHERE extname='vector';"`
-- Confirm GROQ_API_KEY is set in `.env`
-
-**2. Rate limit errors**
-
-- Reduce testset_size (try 5 instead of 10)
-- Wait between generation attempts
-- System automatically retries with 60s delays
-- Consider upgrading Groq tier
-
-**3. PDF ingestion fails**
-
-- Ensure PDF contains extractable text (not scanned images)
-- Check file is valid PDF format
-- Try smaller files first (< 10MB)
-
-**4. Slow query responses**
-
-- Reduce num_results (try 3 instead of 5)
-- Check database indexes
-- Monitor Groq API latency
-
-**5. Out of memory**
-
-- Reduce chunk size in backend.py (`max_chars`)
-- Limit documents per collection
-- Use smaller embedding model
-
-### Debug Mode
-
-Enable detailed logging:
-
-```python
-# In backend.py, add:
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
-
-## 📈 Performance Tips
-
-1. **Optimize Chunk Size**: Balance between context and precision (default: 800 chars)
-2. **Batch Ingestion**: Process multiple PDFs together for efficiency
-3. **Database Indexing**: Ensure pgvector indexes are created
-4. **Caching**: Embeddings model cached after first load
-5. **Rate Limits**: Generate testsets during off-peak hours
-
-## 🔐 Security Considerations
-
-- Store API keys in `.env` file (never commit to git)
-- Add `.env` to `.gitignore`
-- Use environment-specific credentials
-- Implement authentication for production deployments
-- Sanitize user inputs
-- Use HTTPS in production
-- Regular security updates for dependencies
+- **RAG Architecture**: Retrieval-Augmented Generation patterns and best practices
+- **Vector Databases**: Efficient similarity search with pgvector
+- **LLM Integration**: Prompt engineering and context management
+- **API Design**: RESTful endpoints with FastAPI
+- **Full-Stack Development**: Backend services with interactive frontends
+- **Document Processing**: PDF parsing, chunking, and embedding
+- **Evaluation**: Automated testset generation with Ragas
+- **Production Deployment**: Environment configuration and error handling
 
 
+
+## 📮 Future Roadmap
+
+- 🎮 **Interactive Demo** - Public demo site with sample contracts
+- 📱 **Mobile Interface** - Responsive design for tablets and phones
+- 🔗 **Document Comparison** - Side-by-side contract comparison tool
+- 🎨 **Visual Analytics** - Interactive charts and document visualizations
+- 📊 **Evaluation Dashboard** - Ragas metrics tracking over time
+- 🔧 **Model Fine-tuning** - Custom embeddings trained on legal documents
+- 🚀 **Cloud Deployment** - Docker containers and Kubernetes configs
+- 📚 **Knowledge Base** - FAQ system powered by the RAG engine
+- 🔐 **Enterprise Features** - SSO, audit logs, and compliance tools
+- 🌍 **Internationalization** - Support for contracts in 20+ languages
+
+
+
+
+
+---
+
+<div align="center">
+  
+  **⭐ Star this repo if you find it useful! ⭐**
+  
+ 
+  
+  🚀 Powered by FastAPI + Streamlit | 🦙 Groq LLaMA | 🤗 HuggingFace | 🐘 PostgreSQL + pgvector
+  
+</div>
+
+---
+
+*Last updated: November 2025*
